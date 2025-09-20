@@ -77,7 +77,63 @@ if ( ! class_exists( 'Stoke_MainWP_Extension' ) ) {
             add_action( 'admin_init', array( $this, 'handle_settings_save' ) );
             add_action( 'admin_init', array( $this, 'handle_site_meta_save' ) );
             add_action( 'mainwp_manage_sites_edit', array( $this, 'render_site_meta_box' ), 10, 1 );
+            add_action( 'admin_menu', array( $this, 'register_admin_menu' ), 99 );
             add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+        }
+
+        /**
+         * Adds a shortcut to the extension settings under the MainWP menu.
+         */
+        public function register_admin_menu(): void {
+            $parent_slug = $this->locate_mainwp_menu_slug();
+
+            if ( '' === $parent_slug ) {
+                return;
+            }
+
+            add_submenu_page(
+                $parent_slug,
+                __( 'Ops & Reporting', 'stoke-mainwp-extension' ),
+                __( 'Ops & Reporting', 'stoke-mainwp-extension' ),
+                'manage_options',
+                'Extensions-' . self::EXTENSION_SLUG,
+                array( $this, 'render_extension_page' )
+            );
+        }
+
+        /**
+         * Attempts to determine the MainWP parent menu slug for submenu registration.
+         */
+        private function locate_mainwp_menu_slug(): string {
+            global $menu;
+
+            if ( empty( $menu ) || ! is_array( $menu ) ) {
+                return '';
+            }
+
+            $fallback = '';
+            foreach ( $menu as $item ) {
+                if ( ! isset( $item[2] ) || ! is_string( $item[2] ) ) {
+                    continue;
+                }
+
+                $slug = $item[2];
+
+                if ( in_array( $slug, array( 'mainwp_tab', 'mainwp' ), true ) ) {
+                    return $slug;
+                }
+
+                if ( '' === $fallback && false !== stripos( $slug, 'mainwp' ) ) {
+                    $fallback = $slug;
+                    continue;
+                }
+
+                if ( '' === $fallback && isset( $item[0] ) && false !== stripos( wp_strip_all_tags( (string) $item[0] ), 'mainwp' ) ) {
+                    $fallback = $slug;
+                }
+            }
+
+            return $fallback;
         }
 
         /**
