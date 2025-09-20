@@ -19,6 +19,13 @@ if ( ! class_exists( 'Stoke_MainWP_Extension' ) ) {
     final class Stoke_MainWP_Extension {
 
         /**
+         * MainWP extension slug used for registration and routing.
+         *
+         * @var string
+         */
+        private const EXTENSION_SLUG = 'Stoke_MainWP_Extension';
+
+        /**
          * Option key for global settings.
          *
          * @var string
@@ -106,7 +113,7 @@ if ( ! class_exists( 'Stoke_MainWP_Extension' ) ) {
                 'mainwp'   => true,
                 'callback' => array( $this, 'render_extension_page' ),
                 'name'     => __( 'Ops & Reporting', 'stoke-mainwp-extension' ),
-                'slug'     => 'stoke-mainwp-extension',
+                'slug'     => self::EXTENSION_SLUG,
             );
 
             return $extensions;
@@ -212,7 +219,7 @@ if ( ! class_exists( 'Stoke_MainWP_Extension' ) ) {
 
             $redirect = wp_get_referer();
             if ( ! $redirect ) {
-                $redirect = admin_url( 'admin.php?page=Extensions-Stoke_MainWP_Extension' );
+                $redirect = admin_url( 'admin.php?page=Extensions-' . self::EXTENSION_SLUG );
             }
 
             wp_safe_redirect( add_query_arg( 'stoked-settings-updated', '1', $redirect ) );
